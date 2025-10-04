@@ -32,6 +32,8 @@ class TopCoinsView(APIView):
                         "symbol": item.get("symbol", "").upper(),
                         "name": item.get("name", ""),
                         "last_price_usd": Decimal(str(item.get("current_price", 0))) if item.get("current_price") is not None else None,
+                        "last_volume_24h_usd": Decimal(str(item.get("total_volume", 0))) if item.get("total_volume") is not None else None,
+                        "last_pct_change_24h": Decimal(str(item.get("price_change_percentage_24h", 0))) if item.get("price_change_percentage_24h") is not None else None,
                         "last_updated_at": datetime.now(timezone.utc),
                     },
                 )

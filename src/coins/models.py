@@ -6,6 +6,8 @@ class Coin(models.Model):
     symbol = models.CharField(max_length=32)
     name = models.CharField(max_length=128)
     last_price_usd = models.DecimalField(max_digits=20, decimal_places=8, null=True, blank=True)
+    last_volume_24h_usd = models.DecimalField(max_digits=24, decimal_places=2, null=True, blank=True)
+    last_pct_change_24h = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
     last_updated_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
