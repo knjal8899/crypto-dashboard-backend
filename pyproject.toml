@@ -1,0 +1,42 @@
+[project]
+name = "crypto-dashboard-backend"
+version = "0.1.0"
+description = "Crypto Dashboard Backend"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    { name = "CoinTrackr" }
+]
+
+[project.scripts]
+crypto-dashboard-backend = "crypto_dashboard_backend:main"
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-select = ["B","C90","E","F","I","UP"]
+ignore = ["E501"]
+exclude = [
+    ".venv",
+    "venv",
+    "build",
+    "dist"
+]
+
+[tool.pylint.main]
+py-version = "3.12"
+jobs = 0
+recursive = true
+
+[tool.pylint.messages_control]
+disable = [
+    "C0114", # missing-module-docstring
+    "C0115", # missing-class-docstring
+    "C0116"  # missing-function-docstring
+]
+
+
