@@ -56,7 +56,7 @@ INSTALLED_APPS = [
     # Local apps
     'accounts',
     'coins',
-    'qa',
+    'chat',
 ]
 
 MIDDLEWARE = [
