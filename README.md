@@ -55,6 +55,15 @@ Run
 uv run python src/manage.py runserver 0.0.0.0:8000
 ```
 
+Docker
+- Build and run (reads .env for DATABASE_URL, etc.):
+```bash
+docker compose up --build
+```
+- Notes:
+  - Use AWS RDS by setting `DATABASE_URL` in `.env` (e.g., `postgresql://USER:PASSWORD@HOST:5432/DBNAME`).
+  - Container runs uv sync and serves via uvicorn ASGI.
+
 Auth (JWT)
 - Register: POST `/api/auth/register`
   - Body: { "username", "email", "password" }
