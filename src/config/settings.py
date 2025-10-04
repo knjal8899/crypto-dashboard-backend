@@ -30,6 +30,7 @@ env = environ.Env(
     CORS_ALLOWED_ORIGINS=(str, "http://localhost:3000"),
     ACCESS_TOKEN_LIFETIME_MIN=(int, 30),
     REFRESH_TOKEN_LIFETIME_DAYS=(int, 7),
+    COINGECKO_CACHE_TTL_SECONDS=(int, 300),
 )
 environ.Env.read_env(env_file=str(Path(__file__).resolve().parent.parent.parent / ".env"))
 
@@ -114,6 +115,16 @@ SIMPLE_JWT = {
 
 # CORS
 CORS_ALLOWED_ORIGINS = [o.strip() for o in env("CORS_ALLOWED_ORIGINS").split(",") if o.strip()]
+
+# Cache
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'crypto-dashboard-cache',
+    }
+}
+
+COINGECKO_CACHE_TTL_SECONDS = env("COINGECKO_CACHE_TTL_SECONDS")
 
 
 # Password validation
