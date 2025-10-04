@@ -34,3 +34,16 @@ def fetch_coin_history(coin_id: str, days: int = 30) -> Dict[str, Any]:
     resp = requests.get(url, params=params, headers=_headers(), timeout=30)
     resp.raise_for_status()
     return resp.json()
+
+
+def fetch_coin_market_by_id(coin_id: str) -> Dict[str, Any]:
+    url = f"{COINGECKO_API_BASE}/coins/markets"
+    params = {
+        "vs_currency": "usd",
+        "ids": coin_id,
+        "sparkline": "false",
+    }
+    resp = requests.get(url, params=params, headers=_headers(), timeout=30)
+    resp.raise_for_status()
+    data = resp.json()
+    return data[0] if isinstance(data, list) and data else {}
