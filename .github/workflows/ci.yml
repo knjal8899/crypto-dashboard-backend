@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: cointrackr
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres" \
+          --health-interval 10s \
+          --health-timeout 5s \
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Sync deps
+        run: uv sync
+
+      - name: Create .env
+        run: |
+          echo "DJANGO_DEBUG=True" >> .env
+          echo "SECRET_KEY=ci-secret" >> .env
+          echo "ALLOWED_HOSTS=127.0.0.1,localhost" >> .env
+          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/cointrackr" >> .env
+          echo "CORS_ALLOWED_ORIGINS=http://localhost:3000" >> .env
+          echo "ACCESS_TOKEN_LIFETIME_MIN=30" >> .env
+          echo "REFRESH_TOKEN_LIFETIME_DAYS=7" >> .env
+          echo "COINGECKO_API_BASE=https://api.coingecko.com/api/v3" >> .env
+          echo "COINGECKO_API_KEY=" >> .env
+          echo "COINGECKO_CACHE_TTL_SECONDS=60" >> .env
+
+      - name: Run tests
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings
+        run: uv run python src/manage.py test -v 2
+

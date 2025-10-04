@@ -11,6 +11,12 @@ class Coin(models.Model):
     def __str__(self):
         return f"{self.name} ({self.symbol})"
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["symbol"]),
+            models.Index(fields=["last_updated_at"]),
+        ]
+
 
 class PriceHistory(models.Model):
     coin = models.ForeignKey(Coin, on_delete=models.CASCADE, related_name="history")
@@ -20,6 +26,14 @@ class PriceHistory(models.Model):
     class Meta:
         unique_together = ("coin", "date")
         ordering = ["date"]
+        indexes = [
+            models.Index(fields=["coin", "date"]),
+        ]
+
+
+# Additional indexes for Coin
+class Meta:
+    pass
 
 
 # Create your models here.

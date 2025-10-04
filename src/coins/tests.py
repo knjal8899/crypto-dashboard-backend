@@ -19,7 +19,8 @@ class TestCoinsApi(APITestCase):
         ]
         resp = self.client.get("/api/coins/top?limit=1")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.data), 1)
+        self.assertIn("results", resp.data)
+        self.assertEqual(len(resp.data["results"]), 1)
 
     @patch("coins.services.fetch_coin_history")
     def test_coin_history(self, mock_hist):

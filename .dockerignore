@@ -1,0 +1,17 @@
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.git
+.gitignore
+.env
+.DS_Store
+/build
+/dist
+/node_modules
+/media
+/staticfiles
+**/__pycache__/
+**/*.py[cod]
+
