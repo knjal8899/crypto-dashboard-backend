@@ -5,7 +5,7 @@ Backend service for Crypto Dashboard with Chat Assistant.
 Quick start:
 
 1. Install uv and Python 3.13
-2. Create `.env` from `.env.example`
+2. Create `.env` from `env.example`
 3. Start Postgres (see docker-compose step later)
 4. Run migrations and start server
 
