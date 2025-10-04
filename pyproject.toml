@@ -4,4 +4,47 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "django>=5.2.7",
+    "djangorestframework>=3.16.1",
+    "psycopg[binary]>=3.2.10",
+    "python-dotenv>=1.1.1",
+    "requests>=2.32.5",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py313"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+exclude = [".venv", "venv", "migrations"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C4", "PIE", "SIM"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pylint."messages control"]
+disable = [
+    "missing-docstring",
+    "invalid-name",
+    "too-few-public-methods",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "crypto_dashboard_backend.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+
+[dependency-groups]
+dev = [
+    "black>=25.9.0",
+    "pylint>=3.3.8",
+    "pytest>=8.4.2",
+    "pytest-django>=4.11.1",
+    "ruff>=0.13.3",
+]
