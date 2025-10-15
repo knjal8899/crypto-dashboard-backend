@@ -42,10 +42,10 @@ class TopCoinsView(APIView):
         except (TypeError, ValueError):
             limit = 10
         market = fetch_top_coins(limit=limit)
-        coins: List[Coin] = []
+        # Upsert latest snapshot, then serve a paginated queryset from the DB
         with transaction.atomic():
             for item in market:
-                coin, _ = Coin.objects.update_or_create(
+                Coin.objects.update_or_create(
                     cg_id=item["id"],
                     defaults={
                         "symbol": item.get("symbol", "").upper(),
@@ -59,9 +59,15 @@ class TopCoinsView(APIView):
                         "last_updated_at": datetime.now(timezone.utc),
                     },
                 )
-                coins.append(coin)
+
+        # Queryset with ordering; prefetch related collections if needed later
+        queryset = (
+            Coin.objects.all()
+            .order_by("market_cap_rank", "name")
+        )
+
         paginator = PageNumberPagination()
-        page = paginator.paginate_queryset(coins, request, view=self)
+        page = paginator.paginate_queryset(queryset, request, view=self)
         data = CoinSerializer(page, many=True).data
         return paginator.get_paginated_response(data)
 
@@ -97,17 +103,25 @@ class CoinHistoryView(APIView):
         coin = Coin.objects.filter(cg_id=coin_id).first()
         if not coin:
             coin = Coin.objects.create(cg_id=coin_id, symbol=coin_id[:10].upper(), name=coin_id)
-        history_objs: List[PriceHistory] = []
         with transaction.atomic():
             for ts, price in prices:
                 dt = datetime.fromtimestamp(ts / 1000, tz=timezone.utc)
-                ph, _ = PriceHistory.objects.update_or_create(
+                PriceHistory.objects.update_or_create(
                     coin=coin,
                     date=dt.date(),
                     defaults={"price_usd": Decimal(str(price))},
                 )
-                history_objs.append(ph)
-        return Response(PriceHistorySerializer(history_objs, many=True).data)
+
+        # Serve paginated history from DB with efficient relation loading
+        history_qs = (
+            PriceHistory.objects.select_related("coin")
+            .filter(coin=coin)
+            .order_by("date")
+        )
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(history_qs, request, view=self)
+        data = PriceHistorySerializer(page, many=True).data
+        return paginator.get_paginated_response(data)
 
 
 class MarketDataView(APIView):
