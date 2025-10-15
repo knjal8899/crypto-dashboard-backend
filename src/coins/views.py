@@ -351,29 +351,69 @@ class WatchlistView(APIView):
 
     @extend_schema(
         summary="Get user watchlist",
-        description="Get the list of coin IDs in the user's watchlist.",
+        description="Get the list of coins in the user's watchlist with full coin details.",
         responses={
             200: {
                 "type": "array",
-                "items": {"type": "string"}
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "string"},
+                        "name": {"type": "string"},
+                        "symbol": {"type": "string"},
+                        "image": {"type": "string"},
+                        "currentPrice": {"type": "number"},
+                        "priceChange24h": {"type": "number"},
+                        "marketCap": {"type": "number"},
+                        "addedAt": {"type": "string", "format": "date-time"}
+                    }
+                }
             }
         },
         tags=["Watchlist"],
     )
     def get(self, request):
-        watchlist = Watchlist.objects.filter(user=request.user).values_list('coin__cg_id', flat=True)
-        return Response(list(watchlist), status=status.HTTP_200_OK)
+        watchlist_items = Watchlist.objects.filter(user=request.user).select_related('coin').order_by('-added_at')
+        
+        watchlist_data = []
+        for item in watchlist_items:
+            coin = item.coin
+            watchlist_data.append({
+                "id": coin.cg_id,
+                "name": coin.name,
+                "symbol": coin.symbol,
+                "image": coin.image_url or "",
+                "currentPrice": float(coin.last_price_usd) if coin.last_price_usd else 0,
+                "priceChange24h": float(coin.last_pct_change_24h) if coin.last_pct_change_24h else 0,
+                "marketCap": float(coin.market_cap_usd) if coin.market_cap_usd else 0,
+                "addedAt": item.added_at.isoformat()
+            })
+        
+        return Response(watchlist_data, status=status.HTTP_200_OK)
 
     @extend_schema(
         summary="Add coin to watchlist",
-        description="Add a coin to the user's watchlist.",
+        description="Add a coin to the user's watchlist. Can use URL path or request body.",
+        request={
+            "type": "object",
+            "properties": {
+                "coinId": {"type": "string"}
+            }
+        },
         responses={
             201: {"message": "Coin added to watchlist successfully"},
             400: "Bad Request - Coin already in watchlist or invalid coin ID"
         },
         tags=["Watchlist"],
     )
-    def post(self, request, coin_id: str):
+    def post(self, request, coin_id: str = None):
+        # Support both URL path and request body
+        if not coin_id:
+            coin_id = request.data.get('coinId')
+        
+        if not coin_id or coin_id == 'undefined':
+            return Response({"error": "Coin ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
         coin, created = Coin.objects.get_or_create(
             cg_id=coin_id,
             defaults={
@@ -394,18 +434,31 @@ class WatchlistView(APIView):
 
     @extend_schema(
         summary="Remove coin from watchlist",
-        description="Remove a coin from the user's watchlist.",
+        description="Remove a coin from the user's watchlist. Can use URL path or request body.",
+        request={
+            "type": "object",
+            "properties": {
+                "coinId": {"type": "string"}
+            }
+        },
         responses={
             200: {"message": "Coin removed from watchlist successfully"},
             404: "Not Found - Coin not in watchlist"
         },
         tags=["Watchlist"],
     )
-    def delete(self, request, coin_id: str):
+    def delete(self, request, coin_id: str = None):
+        # Support both URL path and request body
+        if not coin_id:
+            coin_id = request.data.get('coinId')
+        
+        if not coin_id or coin_id == 'undefined':
+            return Response({"error": "Coin ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             coin = Coin.objects.get(cg_id=coin_id)
             watchlist_item = Watchlist.objects.get(user=request.user, coin=coin)
             watchlist_item.delete()
             return Response({"message": "Coin removed from watchlist successfully"}, status=status.HTTP_200_OK)
         except (Coin.DoesNotExist, Watchlist.DoesNotExist):
-            return Response({"message": "Coin not found in watchlist"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Coin not found in watchlist"}, status=status.HTTP_404_NOT_FOUND)
