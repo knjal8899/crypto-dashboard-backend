@@ -1,6 +1,7 @@
 version: "3.9"
 services:
   web:
+    container_name: crypto-app-backend
     build: .
     env_file:
       - ./.env
