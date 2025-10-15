@@ -8,12 +8,12 @@ WORKDIR /app
 # Install uv first
 RUN pip install uv
 
-# Copy project files
+# Copy project files - use wildcard to handle missing uv.lock gracefully
 COPY pyproject.toml ./
-COPY uv.lock ./
+COPY uv.lock* ./
 
-# Install dependencies
-RUN uv sync --frozen
+# Install dependencies - fallback to pip if uv.lock is missing
+RUN if [ -f uv.lock ]; then uv sync --frozen; else uv sync; fi
 
 # Copy rest of the application
 COPY . .
