@@ -3,7 +3,6 @@ from .models import Coin, PriceHistory, Watchlist
 
 
 class CoinSerializer(serializers.ModelSerializer):
-    # Frontend expects these field names
     id = serializers.CharField(source='cg_id', read_only=True)
     marketCapRank = serializers.IntegerField(source='market_cap_rank', read_only=True)
     image = serializers.URLField(source='image_url', read_only=True)

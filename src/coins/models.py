@@ -53,9 +53,7 @@ class Watchlist(models.Model):
         return f"{self.user.username} watches {self.coin.name}"
 
 
-# Additional indexes for Coin
 class Meta:
     pass
 
 
-# Create your models here.

@@ -25,4 +25,3 @@ class TestQaApi(APITestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn("prices", resp.data)
 
-# Create your tests here.

@@ -42,7 +42,6 @@ class TopCoinsView(APIView):
         except (TypeError, ValueError):
             limit = 10
         market = fetch_top_coins(limit=limit)
-        # Upsert latest snapshot, then serve a paginated queryset from the DB
         with transaction.atomic():
             for item in market:
                 Coin.objects.update_or_create(
@@ -60,7 +59,6 @@ class TopCoinsView(APIView):
                     },
                 )
 
-        # Queryset with ordering; prefetch related collections if needed later
         queryset = (
             Coin.objects.all()
             .order_by("market_cap_rank", "name")
@@ -112,7 +110,6 @@ class CoinHistoryView(APIView):
                     defaults={"price_usd": Decimal(str(price))},
                 )
 
-        # Serve paginated history from DB with efficient relation loading
         history_qs = (
             PriceHistory.objects.select_related("coin")
             .filter(coin=coin)
@@ -271,7 +268,6 @@ class PriceHistoryView(APIView):
     def get(self, request, coin_id: str):
         range_param = request.query_params.get("range", "7d")
         
-        # Map frontend range to CoinGecko days
         range_mapping = {
             "1d": 1,
             "7d": 7,
@@ -281,7 +277,6 @@ class PriceHistoryView(APIView):
         }
         days = range_mapping.get(range_param, 7)
         
-        # Fetch comprehensive chart data
         chart_data = fetch_coin_chart_data(coin_id, days=days)
         
         return Response({
@@ -407,7 +402,6 @@ class WatchlistView(APIView):
         tags=["Watchlist"],
     )
     def post(self, request, coin_id: str = None):
-        # Support both URL path and request body
         if not coin_id:
             coin_id = request.data.get('coinId')
         
@@ -448,7 +442,6 @@ class WatchlistView(APIView):
         tags=["Watchlist"],
     )
     def delete(self, request, coin_id: str = None):
-        # Support both URL path and request body
         if not coin_id:
             coin_id = request.data.get('coinId')
         

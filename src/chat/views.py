@@ -20,7 +20,6 @@ def normalize_coin(q: str) -> str | None:
         for k in keys:
             if re.search(rf"\b{k}\b", ql):
                 return cid
-    # fallback: extract single word after 'of' or last token
     m = re.search(r"price of ([a-z0-9-]+)", ql)
     if m:
         return m.group(1)
@@ -77,7 +76,6 @@ class QaQueryView(APIView):
             price = data.get("current_price")
             return Response({"answer": f"The price of {coin_id} is ${price}.", "coin": coin_id, "price_usd": price})
 
-        # trend handling - check for N-day
         m = re.search(r"(\d+)[- ]?day", ql)
         days = int(m.group(1)) if m else 7
         hist = fetch_coin_history(coin_id, days=days)
@@ -133,7 +131,6 @@ class ChatMessageView(APIView):
         if not message:
             return Response({"detail": "Message is required"}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Simple rule-based responses for now
         message_lower = message.lower()
         
         if "bitcoin" in message_lower or "btc" in message_lower:
@@ -161,4 +158,3 @@ class ChatMessageView(APIView):
         else:
             return Response({"reply": "I can help you with cryptocurrency information. Try asking about Bitcoin, Ethereum, top coins, or market data."})
 
-# Create your views here.

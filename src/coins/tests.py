@@ -7,7 +7,6 @@ class TestCoinsApi(APITestCase):
     def setUp(self):
         User = get_user_model()
         self.user = User.objects.create_user(username="u1", password="pass12345")
-        # login to get token
         resp = self.client.post("/api/auth/login", {"username": "u1", "password": "pass12345"}, format="json")
         self.access = resp.data["access"]
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access}")
@@ -29,4 +28,3 @@ class TestCoinsApi(APITestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(len(resp.data) >= 1)
 
-# Create your tests here.
